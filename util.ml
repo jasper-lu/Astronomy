@@ -13,8 +13,15 @@ let our_max_mass = 50.;;
  * For our purposes, we take maximum mass to be 50 solar mass, and minimum to be 0.8 solar mass.
  *)
 
-(* Now create IMF derivatives *)
-let fraction_lum low high = high ** 2.15 -. low ** 2.15;;
+(* Now create IMF derivatives 
+ * These have the exp at the front to mimic if it were found through integration *)
+let power_diff low high exp = exp *. (high ** exp -. low ** exp);;
+
+let fraction_lum low high = power_diff low high 2.15;;
+
+let fraction_mass low high = power_diff low high (-.0.35);;
+
+let fraction_num low high = power_diff low high (-.1.35);;
 
 (* This function gets us the mass of the star to die most recently at time t (in 10Myrs) *)
 let mass_death_at_time (t : float) : float = 
@@ -43,4 +50,6 @@ let stellar_mag_at_time (t : float) : float =
 let g_r (m : float) = log (((m +. 2.) /. m) -. 0.65);;
 
 let g_r_at_time (t: float) : float = 
-    g_r ((0.8 +. (mass_death_at_time t)) /. 2.);;
+    let high = mass_death_at_time t in 
+    let avg = (fraction_mass our_min_mass high) /. (fraction_num our_min_mass high) in  
+    g_r avg;;
