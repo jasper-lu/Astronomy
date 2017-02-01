@@ -1,0 +1,4 @@
+*.png
+_build/
+*.native
+*.byte
