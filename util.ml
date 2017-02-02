@@ -1,21 +1,10 @@
-(* module A = Archimedes *)
-
-let mass_sun = 1.989 *. (10. ** 30.);;
 (* In terms of multiple of the mass of our sun *)
-let our_min_mass = 0.8;;
+let our_min_mass = 0.08;;
 let our_max_mass = 50.;; 
-
-(* Returns IMF-form function for a given bound, alpha, and usage-specific adjustment
- * Adjustment is for changing into forms such as Luminosity instead of Number, etc *
- *
- * NOTE: We derive the constants using methods from these lecture notes:
- * https://websites.pmc.ucsc.edu/~glatz/astr_112/lectures/notes19.pdf
- * For our purposes, we take maximum mass to be 50 solar mass, and minimum to be 0.8 solar mass.
- *)
 
 (* Now create IMF derivatives 
  * These have the exp at the front to mimic if it were found through integration *)
-let power_diff low high exp = exp *. (high ** exp -. low ** exp);;
+let power_diff low high exp = (1. /. exp) *. (high ** exp -. low ** exp);;
 
 let fraction_lum low high = power_diff low high 2.15;;
 
@@ -27,13 +16,13 @@ let fraction_num low high = power_diff low high (-.1.35);;
 let mass_death_at_time (t : float) : float = 
     if t = 0. then our_max_mass
     else 
-        let div = t /. 1000. in 
+        let div = t /. 10. in 
         div ** (-.1. /. 2.5);;
 
 (* t is in units of 10 Myrs.
  * Function will return as a fraction of a starting Luminosity *)
 let stellar_luminosity (t : float) : float = 
-    fraction_lum 0. (max 0.8 (mass_death_at_time t));;
+    fraction_lum 0.08 (max 0.08 (mass_death_at_time t));;
 
 (* We need to convert this into Magnitude.
  * This gives us the different in magnitude from the start *)
@@ -46,10 +35,38 @@ let stellar_mag_at_time (t : float) : float =
     abs_mag_diff (stellar_luminosity t);;
 
 
+(* UTILS *)
+
+let integrate f a b steps =
+    let meth f x h = f (x +. h /. 2.) in 
+    let h = (b -. a) /. float_of_int steps in
+    let rec helper i s =
+        if i >= steps then s
+        else helper (succ i) (s +. meth f (a +. h *. float_of_int i) h)
+    in
+    h *. helper 0 0.
+;;
+
 (* This is the for part 2 *)
-let g_r (m : float) = log (((m +. 2.) /. m) -. 0.65);;
+let gr (m : float) : float = log ((m +. 2.) /. m) -. 0.65;;
+
+let lum_ratio (m : float) : float = 
+    let gr_val = gr m in 
+    let lg = 10. ** (-.0.4 *. gr_val) in 
+    let lr = m ** 3.5 in 
+    lr *. lg
+;;
+
+let lum_integrated min max = integrate lum_ratio min max 1000;;
+
+let gr_galaxy (min : float) (max : float) = 
+    let weight = 3.5 in 
+    let diff = integrate (fun x -> x ** 3.5) min max 1000 in
+    (*let diff = max -. min in *)
+    let lum_ratio_avg = (lum_integrated min max) /. diff in 
+    -.2.5 *. (log10 lum_ratio_avg)    
+;;
 
 let g_r_at_time (t: float) : float = 
-    let high = mass_death_at_time t in 
-    let avg = (fraction_mass our_min_mass high) /. (fraction_num our_min_mass high) in  
-    g_r avg;;
+    gr_galaxy our_min_mass (mass_death_at_time t)
+;;
