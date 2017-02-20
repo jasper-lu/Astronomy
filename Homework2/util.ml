@@ -65,3 +65,45 @@ let get_dndmr arr =
     Array.iteri (fun i x -> data.(i) <- (log10 (x *. c))) data;
     data
 ;;
+
+(* Question D *) 
+let shift_lower_bound = 0.025;;
+
+let get_shift_bound_for_mag (mr : float) arr = 
+    let len = Array.length arr.(0) in 
+    let curr_shift = ref 0. in 
+    for x = 0 to (len - 1) do 
+        if arr.(4).(x) > mr then 
+            curr_shift := max (arr.(2).(x)) (!curr_shift)
+    done;
+    !curr_shift
+;;
+
+(* Returns volume in terms of Mpc^3 * h^-3 *)
+let get_vol_between_shifts lower upper = 
+    let inferred_dist z = 
+        let c = 299792. in 
+        z *. c /. 100. 
+    in
+    let pi = 4.0 *. atan 1.0 in 
+    let vol r = (4. /. 3.) *. pi *. (r ** 3.) in 
+    (vol (inferred_dist upper)) -. (vol (inferred_dist lower))
+;;
+
+(* Could be immensely sped up if I combine all 3 passes into one *)
+let get_volume_limited_data mr_lower arr = 
+    let upper = get_shift_bound_for_mag mr_lower arr in 
+    let len = Array.length arr.(0) in 
+    let count = ref 0. in 
+    let blue_count = ref 0. in 
+    for x = 0 to (len - 1) do 
+        if (arr.(2).(x)) > shift_lower_bound && (arr.(2).(x)) < upper then 
+            begin
+                count := (!count +. 1.);
+                if (arr.(3).(x) -. arr.(4).(x)) > 0.75 then  
+                    blue_count := (!blue_count +. 1.)
+            end
+    done;
+    print_endline (string_of_float !blue_count);
+    print_endline (string_of_float !count);
+    (upper, (!blue_count /. !count), get_vol_between_shifts shift_lower_bound upper)
