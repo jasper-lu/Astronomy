@@ -24,9 +24,9 @@ let () =
     done;
 in
 
-let plotA = initPlot "DECvsRA.png" "DEC" "RA" in 
+let plotA = initPlot "DECvsRA.png" "RA" "DEC" in 
 A.Axes.box plotA;
-A.Array.xy plotA data.(0) data.(1);
+A.Array.xy plotA data.(1) data.(0);
 A.close plotA;;
 
 let plotB = initPlot "MrvsZ.png" "Redshift" "Mr" in
@@ -45,7 +45,7 @@ A.Viewport.text plotC 0.1 20000. ("Fraction of blue galaxies is: " ^ (String.sub
 A.Viewport.text plotC 0.1 17000. "Granularity is 0.01 gr" ~pos: (A.Backend.RB);
 A.close plotC;;
 
-let dn = Util.get_dndmr data;;
+let dn = Util.get_dndmr data 0. 0.1;;
 let mrX = Util.make_range 30. (-.0.1);;
 
 let plotD = initPlot "MrDensity.png" "Mr" "log(dn/dMr)" in 
@@ -57,9 +57,28 @@ let to_string x =
     let (a, b, c) = x in 
     (string_of_float a) ^ " " ^ (string_of_float b) ^ " " ^ (string_of_float c)
 ;;
-print_endline (to_string (Util.get_volume_limited_data (-.18.) data));;
-print_endline (to_string (Util.get_volume_limited_data (-.19.) data));;
-print_endline (to_string (Util.get_volume_limited_data (-.20.) data));;
+
+let mr18Data = Util.get_volume_limited_data (-.18.) data;;
+let mr19Data = Util.get_volume_limited_data (-.19.) data;;
+let mr20Data = Util.get_volume_limited_data (-.20.) data;;
+print_endline (to_string mr18Data);; 
+print_endline (to_string mr19Data);;
+print_endline (to_string mr20Data);;
+
+let (z18, _, _) = mr18Data;;
+let (z19, _, _) = mr19Data;;
+let (z20, _, _) = mr20Data;;
+
+let dn18 = Util.get_dndmr data 0.025 z18;;
+let dn19 = Util.get_dndmr data 0.025 z19;; 
+let dn20 = Util.get_dndmr data 0.025 z20;; 
+
+let plotE = initPlot "VolLimitedMrDensity.png" "Mr" "log(dn/dMr)" in
+A.Axes.box plotE;
+A.Array.xy plotE mrX dn18 ~style: (`Lines) ~fillcolor: (A.Color.yellow);
+A.Array.xy plotE mrX dn19 ~style: (`Lines) ~fillcolor: (A.Color.red);
+A.Array.xy plotE mrX dn20 ~style: (`Lines) ~fillcolor: (A.Color.blue);
+A.close plotE;;
 (*
 let gr = Util.get_gr data in 
 let min = Array.fold_left (fun a b -> if a < b then a else b) 30. gr in
