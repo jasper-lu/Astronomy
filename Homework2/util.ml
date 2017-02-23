@@ -27,28 +27,30 @@ let get_vol_between_shifts lower upper =
 let get_gr arr =
     let data = Array.make (Array.length (arr.(0))) 0. in 
     for x = 0 to (Array.length data - 1) do 
-        data.(x) <- (arr.(3).(x) -. arr.(4).(x));
+        data.(x) <- (float_of_int (int_of_float (arr.(3).(x) *. 100.) - (int_of_float (arr.(4).(x) *. 100.))));
     done;
     data
 ;;
 
-let get_gr_bucket x = 
-    int_of_float (x *. 100.)
+let get_gr_bucket x bucket_size = 
+    (*truncate (x /. bucket_size) *)
+    int_of_float x
+;;
 
 let get_gr_n arr = 
-    let data = Array.make 200 0. in 
+    let gran = 0.01 in 
+    let size = int_of_float (2. /. gran) in 
+    let data = Array.make size 0. in 
     for x = 0 to (Array.length arr - 1) do 
-        let index = get_gr_bucket (arr.(x)) in 
-        if index < 200 && index >= 0  then 
+        let index = get_gr_bucket (arr.(x)) gran in 
+        if index < size && index >= 0  then 
             data.(index) <- (data.(index) +. 1.)
     done;
     data
 ;;
 
-(* Returns the number density *)
-
 let frac_blue gr_arr threshold = 
-    let n = Array.fold_left (fun acc x -> if x >= 0.75 then acc +. 1. else acc) 0. gr_arr in 
+    let n = Array.fold_left (fun acc x -> if x < 0.75 then acc +. 1. else acc) 0. gr_arr in 
     n /. (float_of_int (Array.length gr_arr))
 ;;
 
@@ -104,8 +106,8 @@ let get_shift_bound_for_mag (mr : float) arr =
 ;;
 
 (* Could be immensely sped up if I combine all 3 passes into one *)
-let get_volume_limited_data mr_lower arr = 
-    let upper = get_shift_bound_for_mag mr_lower arr in 
+let get_volume_limited_data mr arr = 
+    let upper = get_shift_bound_for_mag mr arr in 
     let len = Array.length arr.(0) in 
     let count = ref 0. in 
     let blue_count = ref 0. in 
@@ -113,10 +115,17 @@ let get_volume_limited_data mr_lower arr =
         if (arr.(2).(x)) > shift_lower_bound && (arr.(2).(x)) < upper then 
             begin
                 count := (!count +. 1.);
-                if (arr.(3).(x) -. arr.(4).(x)) > 0.75 then  
+                if (arr.(3).(x) -. arr.(4).(x)) < 0.75 then  
                     blue_count := (!blue_count +. 1.)
             end
     done;
     print_endline (string_of_float !blue_count);
     print_endline (string_of_float !count);
-    (upper, (!blue_count /. !count), get_vol_between_shifts shift_lower_bound upper)
+    (upper, (!blue_count /. !count), get_vol_between_shifts shift_lower_bound upper *. c)
+
+(* Question F *)
+let get_dndmr_weighted arr = 
+    let n_by_mr = get_n_by_mr arr 0. 0.1 in 
+    let vol_for_mr mr = get_vol_between_shifts 0. (get_shift_bound_for_mag mr arr) *. c in 
+    Array.iteri (fun i x -> n_by_mr.(i) <- (log10 (x /. (vol_for_mr (float_of_int i *. (-.0.1)))))) n_by_mr;
+    n_by_mr

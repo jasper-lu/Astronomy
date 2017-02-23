@@ -29,29 +29,29 @@ A.Axes.box plotA;
 A.Array.xy plotA data.(1) data.(0);
 A.close plotA;;
 
-let plotB = initPlot "MrvsZ.png" "Redshift" "Mr" in
-A.Axes.box plotB;
-A.Viewport.yrange plotB (-.25.) (-.17.);
-A.Array.xy plotB data.(2) data.(4);
-A.close plotB;;
+let plotA = initPlot "MrvsZ.png" "Redshift" "Mr" in
+A.Axes.box plotA;
+A.Viewport.yrange plotA (-.25.) (-.17.);
+A.Array.xy plotA data.(2) data.(4);
+A.close plotA;;
 
 let (gr, nBlues) = Util.get_gr_data data;;
 let x = Util.make_range 2. 0.01;;
 
-let plotC = initPlot "GRdistro.png" "g-r" "Number" in
-A.Axes.box plotC;
-A.Array.xy plotC ~style: (`Lines) x gr;
-A.Viewport.text plotC 0.1 20000. ("Fraction of blue galaxies is: " ^ (String.sub (string_of_float (nBlues)) 0 4)) ~pos: (A.Backend.RB);
-A.Viewport.text plotC 0.1 17000. "Granularity is 0.01 gr" ~pos: (A.Backend.RB);
-A.close plotC;;
+let plotB = initPlot "GRdistro.png" "g-r" "Number" in
+A.Axes.box plotB;
+A.Array.xy plotB ~style: (`Lines) ~fill: true ~fillcolor: (A.Color.blue) x gr;
+A.Viewport.text plotB 0.1 20000. ("Fraction of blue galaxies is: " ^ (String.sub (string_of_float (nBlues)) 0 4)) ~pos: (A.Backend.RB);
+A.Viewport.text plotB 0.1 17000. "Granularity is 0.01 gr" ~pos: (A.Backend.RB);
+A.close plotB;;
 
 let dn = Util.get_dndmr data 0. 0.1;;
 let mrX = Util.make_range 30. (-.0.1);;
 
-let plotD = initPlot "MrDensity.png" "Mr" "log(dn/dMr)" in 
-A.Axes.box plotD;
-A.Array.xy plotD ~style: (`Bars 0.1) mrX dn;
-A.close plotD;;
+let plotC = initPlot "MrDensity.png" "Mr" "log(dn/dMr)" in 
+A.Axes.box plotC;
+A.Array.xy plotC ~style: (`Bars 0.1) mrX dn;
+A.close plotC;;
 
 let to_string x = 
     let (a, b, c) = x in 
@@ -75,14 +75,22 @@ let dn20 = Util.get_dndmr data 0.025 z20;;
 
 let plotE = initPlot "VolLimitedMrDensity.png" "Mr" "log(dn/dMr)" in
 A.Axes.box plotE;
+A.Array.xy plotE mrX dn18 ~fill: true ~style: (`Lines) ~fillcolor: (A.Color.yellow);
+A.Array.xy plotE mrX dn19 ~fill: true ~style: (`Lines) ~fillcolor: (A.Color.red);
+A.Array.xy plotE mrX dn20 ~fill: true ~style: (`Lines) ~fillcolor: (A.Color.blue);
+A.close plotE;;
+
+let plotE = initPlot "VolLimitedMrDensityNoCol.png" "Mr" "log(dn/dMr)" in
+A.Axes.box plotE;
 A.Array.xy plotE mrX dn18 ~style: (`Lines) ~fillcolor: (A.Color.yellow);
 A.Array.xy plotE mrX dn19 ~style: (`Lines) ~fillcolor: (A.Color.red);
 A.Array.xy plotE mrX dn20 ~style: (`Lines) ~fillcolor: (A.Color.blue);
 A.close plotE;;
-(*
-let gr = Util.get_gr data in 
-let min = Array.fold_left (fun a b -> if a < b then a else b) 30. gr in
 
-let max = Array.fold_left (fun a b -> if a > b then a else b) (-.30.) gr in
-print_float min;print_char ' ';print_float max;;
-*)
+let dn = Util.get_dndmr_weighted data;;
+let mrX = Util.make_range 30. (-.0.1);;
+
+let plotF = initPlot "WeightedDensity.png" "Mr" "log(dn/dMr)" in 
+A.Axes.box plotF;
+A.Array.xy plotF mrX dn;
+A.close plotF;;
