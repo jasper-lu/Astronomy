@@ -50,13 +50,13 @@ let get_gr_n arr =
 ;;
 
 let frac_blue gr_arr threshold = 
-    let n = Array.fold_left (fun acc x -> if x < 0.75 then acc +. 1. else acc) 0. gr_arr in 
+    let n = Array.fold_left (fun acc x -> if x < threshold then acc +. 1. else acc) 0. gr_arr in 
     n /. (float_of_int (Array.length gr_arr))
 ;;
 
 let get_gr_data arr = 
     let gr_arr = get_gr arr in 
-    (get_gr_n gr_arr, frac_blue gr_arr 0.75)
+    (get_gr_n gr_arr, frac_blue gr_arr 75.)
 
 
 let make_gr_range = 
@@ -74,18 +74,18 @@ let get_mr_bucket x =
 ;;
 
 (*LUMINOSITY FUNCTION GRAPHS *)
-let get_n_by_mr arr z_low z_lim = 
+let get_n_by_mr arr z_low z_lim mr = 
     let data = Array.make 300 0. in
     for x = 0 to (Array.length (arr.(0)) - 1) do 
-        if (arr.(2).(x)) < (z_lim) && (arr.(2).(x) > z_low) then 
+        if (arr.(2).(x)) < (z_lim) && (arr.(2).(x) > z_low) && (arr.(4).(x)) < mr then 
             let index = get_mr_bucket (arr.(4).(x)) in 
             data.(index) <- (data.(index) +. 1.)
     done;
     data
 ;;
 
-let get_dndmr arr z_low z_lim = 
-    let n_by_mr = get_n_by_mr arr z_low z_lim in 
+let get_dndmr arr z_low z_lim mr = 
+    let n_by_mr = get_n_by_mr arr z_low z_lim mr in 
     let vol = get_vol_between_shifts z_low z_lim in 
     let vol = vol *. c in 
     Array.iteri (fun i x -> n_by_mr.(i) <- (log10 (x /. vol))) n_by_mr;
@@ -119,13 +119,11 @@ let get_volume_limited_data mr arr =
                     blue_count := (!blue_count +. 1.)
             end
     done;
-    print_endline (string_of_float !blue_count);
-    print_endline (string_of_float !count);
     (upper, (!blue_count /. !count), get_vol_between_shifts shift_lower_bound upper *. c)
 
 (* Question F *)
 let get_dndmr_weighted arr = 
-    let n_by_mr = get_n_by_mr arr 0. 0.1 in 
+    let n_by_mr = get_n_by_mr arr 0. 0.1 0. in 
     let vol_for_mr mr = get_vol_between_shifts 0. (get_shift_bound_for_mag mr arr) *. c in 
     Array.iteri (fun i x -> n_by_mr.(i) <- (log10 (x /. (vol_for_mr (float_of_int i *. (-.0.1)))))) n_by_mr;
     n_by_mr
