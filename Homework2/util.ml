@@ -27,7 +27,8 @@ let get_vol_between_shifts lower upper =
 let get_gr arr =
     let data = Array.make (Array.length (arr.(0))) 0. in 
     for x = 0 to (Array.length data - 1) do 
-        data.(x) <- (float_of_int (int_of_float (arr.(3).(x) *. 100.) - (int_of_float (arr.(4).(x) *. 100.))));
+        (*data.(x) <- (float_of_int (int_of_float (arr.(3).(x) *. 100.) - (int_of_float (arr.(4).(x) *. 100.))));*)
+        data.(x) <- (arr.(3).(x) *. 100.) -. (arr.(4).(x) *. 100.);
     done;
     data
 ;;
