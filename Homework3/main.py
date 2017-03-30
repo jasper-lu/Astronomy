@@ -62,18 +62,24 @@ def log_arr(arr):
 part1_names = ["SDSS_Mr21_rspace.dat", "SDSS_Mr20_rspace.dat", "SDSS_Mr20_zspace.dat"] 
 
 def part1():
+    print("Part 1 Begin")
     random_points = read_data_spherical("SDSS_random.dat")
     random_pairs = pairs_arr(cKDTree(random_points))
     coords = [read_data_spherical(x) for x in part1_names]
+    print("Read in Coordinates. Making correlation plots")
     data = [correlation_plot(cKDTree(x), random_pairs, len(random_points)) for x in coords]
 
-    plt.plot(log_bins, log_arr(data[0]))
-    plt.plot(log_bins, log_arr(data[1]))
+    plt.plot(log_bins, log_arr(data[0]), label="Mr21")
+    plt.plot(log_bins, log_arr(data[1]), label="Mr20")
+    plt.xlabel("log(r)")
+    plt.ylabel("log(E(r))")
     plt.savefig('plot_a.png')
     plt.close()
 
-    plt.plot(log_bins, log_arr(data[1]))
-    plt.plot(log_bins, log_arr(data[2]))
+    plt.plot(log_bins, log_arr(data[1]), label = "Mr20_r")
+    plt.plot(log_bins, log_arr(data[2]), label = "Mr20_z")
+    plt.xlabel("log(r)")
+    plt.ylabel("log(E(r))")
     plt.savefig('plot_b.png')
     plt.close()
 
@@ -85,19 +91,20 @@ def bias_plot(gal, dm):
     return [np.sqrt(x / y) for (x, y) in zip(gal, dm)]
 
 def part2(part1Data):
+    print("Begin part 2")
     ckd = cKDTree(read_data("DM.dat"))
     random_ckd = cKDTree(read_data("DM_random.dat"))
-    print(pairs_arr(ckd))
-    print(pairs_arr(random_ckd))
-    print(ckd.n)
     print(random_ckd.n)
+    print("Create corrleation plot for dark matter")
     dm_plot = correlation_plot(ckd, pairs_arr(random_ckd), random_ckd.n)
 
     bias21 = bias_plot(part1Data[0], dm_plot)
     bias20 = bias_plot(part1Data[1], dm_plot)
 
-    plt.plot(log_bins, bias21)
-    plt.plot(log_bins, bias20)
+    plt.plot(log_bins, bias21, label="Mr21")
+    plt.plot(log_bins, bias20, label="Mr20")
+    plt.xlabel("log(r)")
+    plt.ylabel("b(E(r))")
     plt.savefig('plot_c.png')
     plt.close()
 
