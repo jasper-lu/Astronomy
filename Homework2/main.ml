@@ -47,6 +47,7 @@ A.Viewport.text plotB 0.1 17000. "Granularity is 0.01 gr" ~pos: (A.Backend.RB);
 A.close plotB;;
 
 let dn = Util.get_dndmr data 0. 0.1 0.;;
+Array.iter (fun x -> print_float x; print_char ' ') dn;;
 let mrX = Util.make_range 30. (-.0.1);;
 
 let plotC = initPlot "MrDensity.png" "Mr" "log(dn/dMr)" in 
