@@ -1,6 +1,5 @@
 import numpy as np 
 import matplotlib.pyplot as plt 
-import uncertainties as u
 import math
 
 from scipy.spatial import cKDTree 
