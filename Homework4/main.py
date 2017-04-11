@@ -131,14 +131,14 @@ def main():
 
     model_arr = [model_1, model_2, model_3, model_4]
     plot_a = create_plot_a(model_arr)
-    plot_b = create_plot_b(model_arr)
-    plot_c = create_plot_c(model_arr)
-    plot_d = create_plot_d(model_arr)
-    plot_e = create_plot_e(model_arr)
     plot_a.savefig("PlotA")
+    plot_b = create_plot_b(model_arr)
     plot_b.savefig("PlotB")
+    plot_c = create_plot_c(model_arr)
     plot_c.savefig("PlotC")
+    plot_d = create_plot_d(model_arr)
     plot_d.savefig("PlotD")
+    plot_e = create_plot_e(model_arr)
     plot_e.savefig("PlotE")
 
 if __name__ == '__main__':
